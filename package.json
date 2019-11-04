@@ -1,14 +1,14 @@
 {
-  "name": "nodebb-plugin-s3-uploads-updated",
+  "name": "nodebb-plugin-minio-uploads",
   "version": "0.3.15",
-  "description": "A plugin for NodeBB to take file uploads and store them on S3 updated for 1.0",
+  "description": "A plugin for NodeBB to take file uploads and store them on MinIO updated.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/louiseMcMahon/nodebb-plugin-s3-uploads.git"
+    "url": "https://github.com/BBleae/nodebb-plugin-minio-uploads.git"
   },
   "keywords": [
     "nodebb",
@@ -21,20 +21,21 @@
   "contributors": [
     "Barış Soner Uşaklı <barisusakli@gmail.com>",
     "Joseph Chen <joseph.chen@gmail.com>",
-    "louise McMahon <louise@louisemcmahon.co.uk>"
+    "louise McMahon <louise@louisemcmahon.co.uk>",
+    "BBleae Sip <bbleae@baka.studio>"
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/louiseMcMahon/nodebb-plugin-s3-uploads/issues"
+    "url": "https://github.com/BBleae/nodebb-plugin-minio-uploads/issues"
   },
   "nbbpm": {
     "compatibility": "^1.5.0"
   },
   "dependencies": {
-    "aws-sdk": "^2.0.23",
-    "uuid": "~1.4.1",
+    "gm": "~1.21.1",
     "mime": "~1.2.11",
+    "minio": "^7.0.12",
     "request": "~2.69.0",
-    "gm": "~1.21.1"
+    "uuid": "~1.4.1"
   }
 }

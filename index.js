@@ -1,15 +1,15 @@
 var Package = require("./package.json");
 
-var AWS = require("aws-sdk"),
+var Minio = require("minio"),
 	mime = require("mime"),
 	uuid = require("uuid").v4,
 	fs = require("fs"),
 	request = require("request"),
 	path = require("path"),
 	winston = module.parent.require("winston"),
-	nconf = module.parent.require('nconf'),
+	nconf = module.parent.require("nconf"),
 	gm = require("gm"),
-	im = gm.subClass({imageMagick: true}),
+	im = gm.subClass({ imageMagick: true }),
 	meta = module.parent.require("./meta"),
 	db = module.parent.require("./database");
 
@@ -18,14 +18,18 @@ var plugin = {}
 "use strict";
 
 var S3Conn = null;
+var MinIOClient = null;
 var settings = {
 	"accessKeyId": false,
 	"secretAccessKey": false,
 	"region": process.env.AWS_DEFAULT_REGION || "us-east-1",
 	"bucket": process.env.S3_UPLOADS_BUCKET || undefined,
 	"host": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com",
-	"path": process.env.S3_UPLOADS_PATH || undefined
+	"path": process.env.S3_UPLOADS_PATH || undefined,
+	"port": process.env.S3_UPLOADS_PORT || 9000,
+	"useSSL": process.env.S3_UPLOADS_USE_SSL || true
 };
+var minioSettings = { useSSL: false }
 
 var accessKeyIdFromDb = false;
 var secretAccessKeyFromDb = false;
@@ -44,68 +48,75 @@ function fetchSettings(callback) {
 		secretAccessKeyFromDb = false;
 
 		if (newSettings.accessKeyId) {
-			settings.accessKeyId = newSettings.accessKeyId;
+			minioSettings.accessKey = newSettings.accessKeyId;
 			accessKeyIdFromDb = true;
 		} else {
-			settings.accessKeyId = false;
+			minioSettings.accessKey = false;
 		}
 
 		if (newSettings.secretAccessKey) {
-			settings.secretAccessKey = newSettings.secretAccessKey;
+			minioSettings.secretKey = newSettings.secretAccessKey;
 			secretAccessKeyFromDb = false;
 		} else {
-			settings.secretAccessKey = false;
+			minioSettings.secretKey = false;
 		}
 
 		if (!newSettings.bucket) {
-			settings.bucket = process.env.S3_UPLOADS_BUCKET || "";
+			minioSettings.bucket = process.env.S3_UPLOADS_BUCKET || "";
 		} else {
-			settings.bucket = newSettings.bucket;
+			minioSettings.bucket = newSettings.bucket;
 		}
 
 		if (!newSettings.host) {
-			settings.host = process.env.S3_UPLOADS_HOST || "";
+			minioSettings.endPoint = process.env.S3_UPLOADS_HOST || "";
 		} else {
-			settings.host = newSettings.host;
+			minioSettings.endPoint = newSettings.host;
+		}
+
+		if (!newSettings.port) {
+			minioSettings.endPoint = process.env.S3_UPLOADS_PORT || 9000;
+		} else {
+			minioSettings.endPoint = newSettings.port;
 		}
 
 		if (!newSettings.path) {
-			settings.path = process.env.S3_UPLOADS_PATH || "";
+			minioSettings.path = process.env.S3_UPLOADS_PATH || "";
 		} else {
-			settings.path = newSettings.path;
+			minioSettings.path = newSettings.path;
 		}
 
 		if (!newSettings.region) {
-			settings.region = process.env.AWS_DEFAULT_REGION || "";
+			minioSettings.region = process.env.AWS_DEFAULT_REGION || "";
 		} else {
-			settings.region = newSettings.region;
+			minioSettings.region = newSettings.region;
 		}
 
 		if (settings.accessKeyId && settings.secretAccessKey) {
-			AWS.config.update({
+
+			Object.assign(minioSettings, {
 				accessKeyId: settings.accessKeyId,
 				secretAccessKey: settings.secretAccessKey
 			});
 		}
-
+		/*
 		if (settings.region) {
-			AWS.config.update({
+			Object.assign(minioSettings,{
 				region: settings.region
 			});
 		}
-
+		*/
 		if (typeof callback === "function") {
 			callback();
 		}
 	});
 }
 
-function S3() {
-	if (!S3Conn) {
-		S3Conn = new AWS.S3();
+function MC() {
+	if (!MinIOClient) {
+		MinIOClient = new Minio.Client(minioSettings);
 	}
 
-	return S3Conn;
+	return MinIOClient;
 }
 
 function makeError(err) {
@@ -120,14 +131,14 @@ function makeError(err) {
 }
 
 plugin.activate = function (data) {
-	if (data.id === 'nodebb-plugin-s3-uploads') {
+	if (data.id === "nodebb-plugin-s3-uploads") {
 		fetchSettings();
 	}
 
 };
 
 plugin.deactivate = function (data) {
-	if (data.id === 'nodebb-plugin-s3-uploads') {
+	if (data.id === "nodebb-plugin-s3-uploads") {
 		S3Conn = null;
 	}
 };
@@ -153,8 +164,8 @@ function renderAdmin(req, res) {
 	// Regenerate csrf token
 	var token = req.csrfToken();
 
-	var forumPath = nconf.get('url');
-	if(forumPath.split("").reverse()[0] != "/" ){
+	var forumPath = nconf.get("url");
+	if (forumPath.split("").reverse()[0] != "/") {
 		forumPath = forumPath + "/";
 	}
 	var data = {
@@ -175,11 +186,12 @@ function s3settings(req, res, next) {
 	var data = req.body;
 	var newSettings = {
 		bucket: data.bucket || "",
-		host: data.host || "",
+		endPoint: data.host || "",
 		path: data.path || "",
-		region: data.region || ""
+		region: data.region || "",
+		port: data.port || 9000,
+		useSSL: data.usessl || true
 	};
-
 	saveSettings(newSettings, res, next);
 }
 
@@ -208,18 +220,18 @@ plugin.uploadImage = function (data, callback) {
 	var image = data.image;
 
 	if (!image) {
-		winston.error("invalid image" );
+		winston.error("invalid image");
 		return callback(new Error("invalid image"));
 	}
 
 	//check filesize vs. settings
 	if (image.size > parseInt(meta.config.maximumFileSize, 10) * 1024) {
-		winston.error("error:file-too-big, " + meta.config.maximumFileSize );
+		winston.error("error:file-too-big, " + meta.config.maximumFileSize);
 		return callback(new Error("[[error:file-too-big, " + meta.config.maximumFileSize + "]]"));
 	}
 
 	var type = image.url ? "url" : "file";
-	var allowedMimeTypes = ['image/png', 'image/jpeg', 'image/gif'];
+	var allowedMimeTypes = ["image/png", "image/jpeg", "image/gif"];
 
 	if (type === "file") {
 		if (!image.path) {
@@ -276,7 +288,7 @@ plugin.uploadFile = function (data, callback) {
 
 	//check filesize vs. settings
 	if (file.size > parseInt(meta.config.maximumFileSize, 10) * 1024) {
-		winston.error("error:file-too-big, " + meta.config.maximumFileSize );
+		winston.error("error:file-too-big, " + meta.config.maximumFileSize);
 		return callback(new Error("[[error:file-too-big, " + meta.config.maximumFileSize + "]]"));
 	}
 
@@ -314,13 +326,13 @@ function uploadToS3(filename, err, buffer, callback) {
 		ContentType: mime.lookup(filename)
 	};
 
-	S3().putObject(params, function (err) {
+	MC().putObject(params.Bucket, params.Key, params.Body, params.Body.byteLength, params.ContentType, function (err) {
 		if (err) {
 			return callback(makeError(err));
 		}
 
 		// amazon has https enabled, we use it by default
-		var host = "https://" + params.Bucket +".s3.amazonaws.com";
+		var host = "https://" + params.Bucket + ".s3.amazonaws.com";
 		if (settings.host && 0 < settings.host.length) {
 			host = settings.host;
 			// host must start with http or https

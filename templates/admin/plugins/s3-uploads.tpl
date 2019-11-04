@@ -51,6 +51,10 @@ export S3_UPLOADS_PATH="path"
 	<input type="text" id="s3host" name="host" value="{host}" title="S3 Host" class="form-control input-lg"
 	       placeholder="website.com"><br/>
 
+	<label for="s3port">Host</label><br/>
+	<input type="text" id="s3port" name="port" value="{port}" title="S3 Port" class="form-control input-lg"
+	       placeholder="website.com"><br/>
+
 	<label for="s3path">Path</label><br/>
 	<input type="text" id="s3path" name="path" value="{path}" title="S3 Path" class="form-control input-lg"
 	       placeholder="/assets"><br/>
@@ -71,6 +75,13 @@ export S3_UPLOADS_PATH="path"
 		<option value="ap-southeast-2">Sydney (ap-southeast-2)</option>
 		<option value="ap-south-1">Mumbai (ap-south-1)</option>
 		<option value="sa-east-1">São Paulo (sa-east-1)</option>
+	</select>
+	<br/>
+
+	<label for="usessl">Region</label><br/>
+	<select id="usessl" name="usessl" title="Use SSL" class="form-control">
+		<option value="true">True</option>
+		<option value="false">False</option>
 	</select>
 	<br/>
 
