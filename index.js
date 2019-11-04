@@ -2,7 +2,7 @@ var Package = require("./package.json");
 
 var Minio = require("minio"),
 	mime = require("mime"),
-	uuid = require("uuid").v4,
+	uuidv4 = require("uuid/v4"),
 	fs = require("fs"),
 	request = require("request"),
 	path = require("path"),
@@ -238,7 +238,7 @@ plugin.uploadImage = function (data, callback) {
 			return callback(new Error("invalid image path"));
 		}
 
-		if (allowedMimeTypes.indexOf(mime.lookup(image.path)) === -1) {
+		if (allowedMimeTypes.indexOf(mime.getType(image.path)) === -1) {
 			return callback(new Error("invalid mime type"));
 		}
 
@@ -247,7 +247,7 @@ plugin.uploadImage = function (data, callback) {
 		});
 	}
 	else {
-		if (allowedMimeTypes.indexOf(mime.lookup(image.url)) === -1) {
+		if (allowedMimeTypes.indexOf(mime.getType(image.url)) === -1) {
 			return callback(new Error("invalid mime type"));
 		}
 		var filename = image.url.split("/").pop();
@@ -320,10 +320,10 @@ function uploadToS3(filename, err, buffer, callback) {
 	var params = {
 		Bucket: settings.bucket,
 		ACL: "public-read",
-		Key: s3KeyPath + uuid() + path.extname(filename),
+		Key: s3KeyPath + uuidv4() + path.extname(filename),
 		Body: buffer,
 		ContentLength: buffer.length,
-		ContentType: mime.lookup(filename)
+		ContentType: mime.getType(filename)
 	};
 
 	MC().putObject(params.Bucket, params.Key, params.Body, params.Body.byteLength, params.ContentType, function (err) {
