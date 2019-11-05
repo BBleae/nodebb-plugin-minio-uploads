@@ -5,7 +5,7 @@
     "url": "https://github.com/BBleae/nodebb-plugin-minio-uploads",
     "library": "./index.js",
     "staticDirs": {
-        "s3": "public"
+        "minio": "public"
     },
     "hooks": [
         { "hook": "static:app.load", "method": "load"},

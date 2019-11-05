@@ -131,14 +131,14 @@ function makeError(err) {
 }
 
 plugin.activate = function (data) {
-	if (data.id === "nodebb-plugin-s3-uploads") {
+	if (data.id === "nodebb-plugin-minio-uploads") {
 		fetchSettings();
 	}
 
 };
 
 plugin.deactivate = function (data) {
-	if (data.id === "nodebb-plugin-s3-uploads") {
+	if (data.id === "nodebb-plugin-minio-uploads") {
 		S3Conn = null;
 	}
 };
@@ -148,7 +148,7 @@ plugin.load = function (params, callback) {
 		if (err) {
 			return winston.error(err.message);
 		}
-		var adminRoute = "/admin/plugins/s3-uploads";
+		var adminRoute = "/admin/plugins/minio-uploads";
 
 		params.router.get(adminRoute, params.middleware.applyCSRF, params.middleware.admin.buildHeader, renderAdmin);
 		params.router.get("/api" + adminRoute, params.middleware.applyCSRF, renderAdmin);
@@ -179,7 +179,7 @@ function renderAdmin(req, res) {
 		csrf: token
 	};
 
-	res.render("admin/plugins/s3-uploads", data);
+	res.render("admin/plugins/minio-uploads", data);
 }
 
 function s3settings(req, res, next) {
@@ -352,9 +352,9 @@ var admin = plugin.admin = {};
 
 admin.menu = function (custom_header, callback) {
 	custom_header.plugins.push({
-		"route": "/plugins/s3-uploads",
+		"route": "/plugins/minio-uploads",
 		"icon": "fa-envelope-o",
-		"name": "S3 Uploads"
+		"name": "MinIO Uploads"
 	});
 
 	callback(null, custom_header);

@@ -133,7 +133,7 @@ export S3_UPLOADS_PATH="path"
 				data[values[i].name] = values[i].value;
 			}
 
-			$.post('{forumPath}api/admin/plugins/s3-uploads/' + type, data).done(function (response) {
+			$.post('{forumPath}api/admin/plugins/minio-uploads/' + type, data).done(function (response) {
 				if (response) {
 					ajaxify.refresh();
 					app.alertSuccess(response);
