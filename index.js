@@ -162,12 +162,12 @@ function renderAdmin(req, res) {
 		forumPath = forumPath + "/";
 	}
 	var data = {
-		bucket: settings.bucket,
-		endPoint: settings.endPoint,
-		path: settings.path,
+		bucket: minioSettings.bucket,
+		endPoint: minioSettings.endPoint,
+		path: minioSettings.path,
 		forumPath: forumPath,
-		accessKeyId: (accessKeyIdFromDb && settings.accessKeyId) || "",
-		secretAccessKey: (accessKeyIdFromDb && settings.secretAccessKey) || "",
+		accessKeyId: (accessKeyIdFromDb && minioSettings.accessKeyId) || "",
+		secretAccessKey: (accessKeyIdFromDb && minioSettings.secretAccessKey) || "",
 		csrf: token
 	};
 
@@ -294,8 +294,8 @@ function uploadToS3(filename, err, buffer, callback) {
 	}
 
 	var s3Path;
-	if (settings.path && 0 < settings.path.length) {
-		s3Path = settings.path;
+	if (minioSettings.path && 0 < minioSettings.path.length) {
+		s3Path = minioSettings.path;
 
 		if (!s3Path.match(/\/$/)) {
 			// Add trailing slash
@@ -309,7 +309,7 @@ function uploadToS3(filename, err, buffer, callback) {
 	var s3KeyPath = s3Path.replace(/^\//, ""); // S3 Key Path should not start with slash.
 
 	var params = {
-		Bucket: settings.bucket,
+		Bucket: minioSettings.bucket,
 		ACL: "public-read",
 		Key: s3KeyPath + uuidv4() + path.extname(filename),
 		Body: buffer,
@@ -324,8 +324,8 @@ function uploadToS3(filename, err, buffer, callback) {
 
 		// amazon has https enabled, we use it by default
 		var endPoint = "https://" + params.Bucket + ".s3.amazonaws.com";
-		if (settings.endPoint && 0 < settings.endPoint.length) {
-			endPoint = settings.endPoint;
+		if (minioSettings.endPoint && 0 < minioSettings.endPoint.length) {
+			endPoint = minioSettings.endPoint;
 			// endPoint must start with http or https
 			if (!endPoint.startsWith("http")) {
 				if (minioSettings.useSSL) {
@@ -339,7 +339,7 @@ function uploadToS3(filename, err, buffer, callback) {
 
 		callback(null, {
 			name: filename,
-			url: url.resolve(endPoint, minioSettings.path + "/" + params.Key)
+			url: url.resolve(endPoint, params.Key)
 		});
 	});
 }
