@@ -319,7 +319,7 @@ function uploadToS3(filename, err, buffer, callback) {
 		ContentType: mime.getType(filename)
 	};
 
-	MC().putObject(params.Bucket, params.Key, params.Body, params.Body.byteLength, { ContentType: params.ContentType }, function (err) {
+	MC().putObject(params.Bucket, params.Key, params.Body, params.Body.byteLength, { "Content-Type": params.ContentType }, function (err) {
 		if (err) {
 			return callback(makeError(err));
 		}
