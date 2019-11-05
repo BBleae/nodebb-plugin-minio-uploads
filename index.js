@@ -1,6 +1,7 @@
 var Package = require("./package.json");
 
-var Minio = require("minio"),
+var url = require("url"),
+	Minio = require("minio"),
 	mime = require("mime"),
 	uuidv4 = require("uuid/v4"),
 	fs = require("fs"),
@@ -26,7 +27,7 @@ var settings = {
 	"host": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com",
 	"path": process.env.S3_UPLOADS_PATH || undefined,
 	"port": process.env.S3_UPLOADS_PORT || 9000,
-	"useSSL": (process.env.S3_UPLOADS_USE_SSL=='true') || true,
+	"useSSL": (process.env.S3_UPLOADS_USE_SSL == 'true') || true,
 	"endPoint": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com"
 };
 var minioSettings = { useSSL: true }
@@ -80,9 +81,9 @@ function fetchSettings(callback) {
 		}
 
 		if (!newSettings.useSSL) {
-			minioSettings.useSSL = (process.env.S3_UPLOADS_USE_SSL=='true') || 9000;
+			minioSettings.useSSL = (process.env.S3_UPLOADS_USE_SSL == 'true') || 9000;
 		} else {
-			minioSettings.useSSL = (newSettings.useSSL=='true');
+			minioSettings.useSSL = (newSettings.useSSL == 'true');
 		}
 
 		if (!newSettings.path) {
@@ -318,7 +319,7 @@ function uploadToS3(filename, err, buffer, callback) {
 		ContentType: mime.getType(filename)
 	};
 
-	MC().putObject(params.Bucket, params.Key, params.Body, params.Body.byteLength, {ContentType: params.ContentType}, function (err) {
+	MC().putObject(params.Bucket, params.Key, params.Body, params.Body.byteLength, { ContentType: params.ContentType }, function (err) {
 		if (err) {
 			return callback(makeError(err));
 		}
@@ -332,7 +333,7 @@ function uploadToS3(filename, err, buffer, callback) {
 				if (minioSettings.useSSL) {
 					host = "https://" + host;
 				}
-				else{
+				else {
 					host = "http://" + host;
 				}
 			}
@@ -340,7 +341,7 @@ function uploadToS3(filename, err, buffer, callback) {
 
 		callback(null, {
 			name: filename,
-			url: host + "/" + minioSettings.path +"/" + params.Key
+			url: url.resolve(host, minioSettings.path + "/" + params.Key)
 		});
 	});
 }
