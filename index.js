@@ -18,17 +18,15 @@ var plugin = {}
 
 "use strict";
 
-var S3Conn = null;
 var MinIOClient = null;
 var settings = {
 	"accessKeyId": false,
 	"secretAccessKey": false,
-	"bucket": process.env.S3_UPLOADS_BUCKET || undefined,
-	"host": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com",
-	"path": process.env.S3_UPLOADS_PATH || undefined,
-	"port": process.env.S3_UPLOADS_PORT || 9000,
-	"useSSL": (process.env.S3_UPLOADS_USE_SSL == 'true') || true,
-	"endPoint": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com"
+	"bucket": "nodebb",
+	"path": "/nodebb",
+	"port": 9000,
+	"useSSL": true,
+	"endPoint": "s3.amazonaws.com"
 };
 var minioSettings = { useSSL: true }
 
@@ -63,31 +61,31 @@ function fetchSettings(callback) {
 		}
 
 		if (!newSettings.bucket) {
-			minioSettings.bucket = process.env.S3_UPLOADS_BUCKET || "";
+			minioSettings.bucket = settings.bucket;
 		} else {
 			minioSettings.bucket = newSettings.bucket;
 		}
 
-		if (!newSettings.host) {
-			minioSettings.endPoint = process.env.S3_UPLOADS_HOST || "";
+		if (!newSettings.endPoint) {
+			minioSettings.endPoint = settings.endPoint;
 		} else {
-			minioSettings.endPoint = newSettings.host;
+			minioSettings.endPoint = newSettings.endPoint;
 		}
 
 		if (!newSettings.port) {
-			minioSettings.port = process.env.S3_UPLOADS_PORT || 9000;
+			minioSettings.port = settings.port;
 		} else {
 			minioSettings.port = Number(newSettings.port);
 		}
 
 		if (!newSettings.useSSL) {
-			minioSettings.useSSL = (process.env.S3_UPLOADS_USE_SSL == 'true') || 9000;
+			minioSettings.useSSL = true;
 		} else {
 			minioSettings.useSSL = (newSettings.useSSL == 'true');
 		}
 
 		if (!newSettings.path) {
-			minioSettings.path = process.env.S3_UPLOADS_PATH || "";
+			minioSettings.path = "/nodebb";
 		} else {
 			minioSettings.path = newSettings.path;
 		}
@@ -165,7 +163,7 @@ function renderAdmin(req, res) {
 	}
 	var data = {
 		bucket: settings.bucket,
-		host: settings.host,
+		endPoint: settings.endPoint,
 		path: settings.path,
 		forumPath: forumPath,
 		accessKeyId: (accessKeyIdFromDb && settings.accessKeyId) || "",
@@ -180,7 +178,7 @@ function s3settings(req, res, next) {
 	var data = req.body;
 	var newSettings = {
 		bucket: data.bucket || "",
-		endPoint: data.host || "",
+		endPoint: data.endPoint || "",
 		path: data.path || "",
 		port: data.port || 9000,
 		useSSL: data.useSSL || true
@@ -325,23 +323,23 @@ function uploadToS3(filename, err, buffer, callback) {
 		}
 
 		// amazon has https enabled, we use it by default
-		var host = "https://" + params.Bucket + ".s3.amazonaws.com";
-		if (settings.host && 0 < settings.host.length) {
-			host = settings.host;
-			// host must start with http or https
-			if (!host.startsWith("http")) {
+		var endPoint = "https://" + params.Bucket + ".s3.amazonaws.com";
+		if (settings.endPoint && 0 < settings.endPoint.length) {
+			endPoint = settings.endPoint;
+			// endPoint must start with http or https
+			if (!endPoint.startsWith("http")) {
 				if (minioSettings.useSSL) {
-					host = "https://" + host;
+					endPoint = "https://" + endPoint;
 				}
 				else {
-					host = "http://" + host;
+					endPoint = "http://" + endPoint;
 				}
 			}
 		}
 
 		callback(null, {
 			name: filename,
-			url: url.resolve(host, minioSettings.path + "/" + params.Key)
+			url: url.resolve(endPoint, minioSettings.path + "/" + params.Key)
 		});
 	});
 }
