@@ -10,8 +10,8 @@ var Minio = require("minio"),
 	nconf = module.parent.require("nconf"),
 	gm = require("gm"),
 	im = gm.subClass({ imageMagick: true }),
-	meta = module.parent.require("./meta"),
-	db = module.parent.require("./database");
+	meta = require.main.require("./src/meta"),
+	db = require.main.require("./src/database");
 
 var plugin = {}
 
