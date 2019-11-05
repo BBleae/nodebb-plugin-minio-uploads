@@ -22,12 +22,12 @@ var MinIOClient = null;
 var settings = {
 	"accessKeyId": false,
 	"secretAccessKey": false,
-	"region": process.env.AWS_DEFAULT_REGION || "us-east-1",
 	"bucket": process.env.S3_UPLOADS_BUCKET || undefined,
 	"host": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com",
 	"path": process.env.S3_UPLOADS_PATH || undefined,
 	"port": process.env.S3_UPLOADS_PORT || 9000,
-	"useSSL": process.env.S3_UPLOADS_USE_SSL || true
+	"useSSL": process.env.S3_UPLOADS_USE_SSL || true,
+	"endPoint": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com"
 };
 var minioSettings = { useSSL: false }
 
@@ -85,12 +85,6 @@ function fetchSettings(callback) {
 			minioSettings.path = newSettings.path;
 		}
 
-		if (!newSettings.region) {
-			minioSettings.region = process.env.AWS_DEFAULT_REGION || "";
-		} else {
-			minioSettings.region = newSettings.region;
-		}
-
 		if (settings.accessKeyId && settings.secretAccessKey) {
 
 			Object.assign(minioSettings, {
@@ -98,13 +92,7 @@ function fetchSettings(callback) {
 				secretAccessKey: settings.secretAccessKey
 			});
 		}
-		/*
-		if (settings.region) {
-			Object.assign(minioSettings,{
-				region: settings.region
-			});
-		}
-		*/
+
 		if (typeof callback === "function") {
 			callback();
 		}
@@ -173,7 +161,6 @@ function renderAdmin(req, res) {
 		host: settings.host,
 		path: settings.path,
 		forumPath: forumPath,
-		region: settings.region,
 		accessKeyId: (accessKeyIdFromDb && settings.accessKeyId) || "",
 		secretAccessKey: (accessKeyIdFromDb && settings.secretAccessKey) || "",
 		csrf: token
@@ -188,7 +175,6 @@ function s3settings(req, res, next) {
 		bucket: data.bucket || "",
 		endPoint: data.host || "",
 		path: data.path || "",
-		region: data.region || "",
 		port: data.port || 9000,
 		useSSL: data.usessl || true
 	};

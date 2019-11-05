@@ -53,32 +53,13 @@ export S3_UPLOADS_PATH="path"
 
 	<label for="s3port">Port</label><br/>
 	<input type="text" id="s3port" name="port" value="{port}" title="S3 Port" class="form-control input-lg"
-	       placeholder="website.com"><br/>
+	       placeholder="9000"><br/>
 
 	<label for="s3path">Path</label><br/>
 	<input type="text" id="s3path" name="path" value="{path}" title="S3 Path" class="form-control input-lg"
 	       placeholder="/assets"><br/>
 
-	<label for="aws-region">Region</label><br/>
-	<select id="aws-region" name="region" title="AWS Region" class="form-control">
-		<option value="">..</option>
-		<option value="us-east-1">Standard (us-east-1)</option>
-		<option value="us-west-1">N. California (us-west-1)</option>
-		<option value="us-west-2">Oregon (us-west-2)</option>
-		<option value="ca-central-1">Canada (ca-central-1)</option>
-		<option value="eu-west-1">Ireland (eu-west-1)</option>
-		<option value="eu-west-2">London (eu-west-2)</option>
-		<option value="eu-central-1">Frankfurt (eu-central-1)</option>
-		<option value="ap-northeast-1">Tokyo (ap-northeast-1)</option>
-		<option value="ap-northeast-2">Seoul (ap-northeast-2)</option>
-		<option value="ap-southeast-1">Singapore (ap-southeast-1)</option>
-		<option value="ap-southeast-2">Sydney (ap-southeast-2)</option>
-		<option value="ap-south-1">Mumbai (ap-south-1)</option>
-		<option value="sa-east-1">São Paulo (sa-east-1)</option>
-	</select>
-	<br/>
-
-	<label for="usessl">Region</label><br/>
+	<label for="usessl">Use SSL</label><br/>
 	<select id="usessl" name="usessl" title="Use SSL" class="form-control">
 		<option value="true">True</option>
 		<option value="false">False</option>
