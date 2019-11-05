@@ -26,10 +26,10 @@ var settings = {
 	"host": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com",
 	"path": process.env.S3_UPLOADS_PATH || undefined,
 	"port": process.env.S3_UPLOADS_PORT || 9000,
-	"useSSL": process.env.S3_UPLOADS_USE_SSL || true,
+	"useSSL": (process.env.S3_UPLOADS_USE_SSL=='true') || true,
 	"endPoint": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com"
 };
-var minioSettings = { useSSL: false }
+var minioSettings = { usessl: true }
 
 var accessKeyIdFromDb = false;
 var secretAccessKeyFromDb = false;
@@ -77,6 +77,12 @@ function fetchSettings(callback) {
 			minioSettings.port = process.env.S3_UPLOADS_PORT || 9000;
 		} else {
 			minioSettings.port = Number(newSettings.port);
+		}
+
+		if (!newSettings.useSSL) {
+			minioSettings.usessl = (process.env.S3_UPLOADS_USE_SSL=='true') || 9000;
+		} else {
+			minioSettings.usessl = (newSettings.useSSL=='true');
 		}
 
 		if (!newSettings.path) {
