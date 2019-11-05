@@ -329,13 +329,18 @@ function uploadToS3(filename, err, buffer, callback) {
 			host = settings.host;
 			// host must start with http or https
 			if (!host.startsWith("http")) {
-				host = "http://" + host;
+				if (minioSettings.useSSL) {
+					host = "https://" + host;
+				}
+				else{
+					host = "http://" + host;
+				}
 			}
 		}
 
 		callback(null, {
 			name: filename,
-			url: host + "/" + params.Key
+			url: host + "/" + minioSettings.path +"/" + params.Key
 		});
 	});
 }
