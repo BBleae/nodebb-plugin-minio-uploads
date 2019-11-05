@@ -311,7 +311,7 @@ function uploadToS3(filename, err, buffer, callback) {
 	var params = {
 		Bucket: minioSettings.bucket,
 		ACL: "public-read",
-		Key: s3KeyPath + uuidv4() + path.extname(filename),
+		Key: uuidv4() + path.extname(filename),
 		Body: buffer,
 		ContentLength: buffer.length,
 		ContentType: mime.getType(filename)
