@@ -74,9 +74,9 @@ function fetchSettings(callback) {
 		}
 
 		if (!newSettings.port) {
-			minioSettings.endPoint = process.env.S3_UPLOADS_PORT || 9000;
+			minioSettings.port = process.env.S3_UPLOADS_PORT || 9000;
 		} else {
-			minioSettings.endPoint = newSettings.port;
+			minioSettings.port = newSettings.port;
 		}
 
 		if (!newSettings.path) {

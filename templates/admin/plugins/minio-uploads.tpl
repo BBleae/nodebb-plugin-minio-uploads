@@ -51,7 +51,7 @@ export S3_UPLOADS_PATH="path"
 	<input type="text" id="s3host" name="host" value="{host}" title="S3 Host" class="form-control input-lg"
 	       placeholder="website.com"><br/>
 
-	<label for="s3port">Host</label><br/>
+	<label for="s3port">Port</label><br/>
 	<input type="text" id="s3port" name="port" value="{port}" title="S3 Port" class="form-control input-lg"
 	       placeholder="website.com"><br/>
 
