@@ -29,7 +29,7 @@ var settings = {
 	"useSSL": (process.env.S3_UPLOADS_USE_SSL=='true') || true,
 	"endPoint": process.env.S3_UPLOADS_HOST || "s3.amazonaws.com"
 };
-var minioSettings = { usessl: true }
+var minioSettings = { useSSL: true }
 
 var accessKeyIdFromDb = false;
 var secretAccessKeyFromDb = false;
@@ -80,9 +80,9 @@ function fetchSettings(callback) {
 		}
 
 		if (!newSettings.useSSL) {
-			minioSettings.usessl = (process.env.S3_UPLOADS_USE_SSL=='true') || 9000;
+			minioSettings.useSSL = (process.env.S3_UPLOADS_USE_SSL=='true') || 9000;
 		} else {
-			minioSettings.usessl = (newSettings.useSSL=='true');
+			minioSettings.useSSL = (newSettings.useSSL=='true');
 		}
 
 		if (!newSettings.path) {
@@ -182,7 +182,7 @@ function s3settings(req, res, next) {
 		endPoint: data.host || "",
 		path: data.path || "",
 		port: data.port || 9000,
-		useSSL: data.usessl || true
+		useSSL: data.useSSL || true
 	};
 	saveSettings(newSettings, res, next);
 }
