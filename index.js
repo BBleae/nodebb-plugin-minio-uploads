@@ -339,7 +339,7 @@ function uploadToS3(filename, err, buffer, callback) {
 
 		callback(null, {
 			name: filename,
-			url: url.resolve(endPoint, params.Key)
+			url: url.resolve(endPoint, s3KeyPath + params.Key)
 		});
 	});
 }
