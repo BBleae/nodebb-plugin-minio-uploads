@@ -1,18 +1,6 @@
 <h1><i class="fa fa-picture-o"></i> S3 Uploads Configuration</h1>
 <hr/>
 
-<p>You can configure this plugin via a combination of the below, for instance, you can use <em>instance meta-data</em>
-	and <em>environment variables</em> in combination. You can also specify values in the form below, and those will be
-	stored in the database.</p>
-
-<h3>Environment Variables</h3>
-<pre><code>export AWS_ACCESS_KEY_ID="xxxxx"
-export AWS_SECRET_ACCESS_KEY="yyyyy"
-export S3_UPLOADS_BUCKET="zzzz"
-export S3_UPLOADS_HOST="host"
-export S3_UPLOADS_PATH="path"
-</code></pre>
-
 <p>
 	Asset host and asset path are optional. You can leave these blank to default to the standard asset url -
 	http://mybucket.s3.amazonaws.com/uuid.jpg.<br/>
@@ -37,7 +25,7 @@ export S3_UPLOADS_PATH="path"
 	</li>
 </ul>
 <div class="alert alert-warning">
-	<p>If you need help, create an <a href="https://github.com/LewisMcMahon/nodebb-plugin-s3-uploads/issues/">issue on
+	<p>If you need help, create an <a href="https://github.com/BBleae/nodebb-plugin-minio-uploads/issues/">issue on
 		Github</a>.</p>
 </div>
 
@@ -47,8 +35,8 @@ export S3_UPLOADS_PATH="path"
 	<input type="text" id="s3bucket" name="bucket" value="{bucket}" title="S3 Bucket" class="form-control input-lg"
 	       placeholder="S3 Bucket"><br/>
 
-	<label for="s3host">Host</label><br/>
-	<input type="text" id="s3host" name="host" value="{host}" title="S3 Host" class="form-control input-lg"
+	<label for="endPoint">End Point</label><br/>
+	<input type="text" id="endPoint" name="endPoint" value="{endPoint}" title="End Point" class="form-control input-lg"
 	       placeholder="website.com"><br/>
 
 	<label for="s3port">Port</label><br/>
@@ -57,7 +45,7 @@ export S3_UPLOADS_PATH="path"
 
 	<label for="s3path">Path</label><br/>
 	<input type="text" id="s3path" name="path" value="{path}" title="S3 Path" class="form-control input-lg"
-	       placeholder="/assets"><br/>
+	       placeholder="/nodebb"><br/>
 
 	<label for="usessl">Use SSL</label><br/>
 	<select id="usessl" name="usessl" title="Use SSL" class="form-control">
