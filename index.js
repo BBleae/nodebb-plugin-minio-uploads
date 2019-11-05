@@ -120,7 +120,7 @@ function makeError(err) {
 		err = new Error(Package.name + " :: " + err);
 	}
 
-	winston.error(err.message);
+	winston.error(err.stack);
 	return err;
 }
 
