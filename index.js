@@ -14,7 +14,7 @@ var url = require("url"),
 	meta = require.main.require("./src/meta"),
 	db = require.main.require("./src/database");
 
-var plugin = {}
+var plugin = {};
 
 "use strict";
 
@@ -28,10 +28,9 @@ var settings = {
 	"useSSL": true,
 	"endPoint": "s3.amazonaws.com"
 };
-var minioSettings = { useSSL: true }
+var minioSettings = { useSSL: true };
 
 var accessKeyIdFromDb = false;
-var secretAccessKeyFromDb = false;
 
 function fetchSettings(callback) {
 	db.getObjectFields(Package.name, Object.keys(settings), function (err, newSettings) {
@@ -44,7 +43,6 @@ function fetchSettings(callback) {
 		}
 
 		accessKeyIdFromDb = false;
-		secretAccessKeyFromDb = false;
 
 		if (newSettings.accessKeyId) {
 			minioSettings.accessKey = newSettings.accessKeyId;
@@ -55,7 +53,6 @@ function fetchSettings(callback) {
 
 		if (newSettings.secretAccessKey) {
 			minioSettings.secretKey = newSettings.secretAccessKey;
-			secretAccessKeyFromDb = false;
 		} else {
 			minioSettings.secretKey = false;
 		}
@@ -81,7 +78,7 @@ function fetchSettings(callback) {
 		if (!newSettings.useSSL) {
 			minioSettings.useSSL = true;
 		} else {
-			minioSettings.useSSL = (newSettings.useSSL == 'true');
+			minioSettings.useSSL = (newSettings.useSSL == "true");
 		}
 
 		if (!newSettings.path) {
@@ -132,7 +129,7 @@ plugin.activate = function (data) {
 
 plugin.deactivate = function (data) {
 	if (data.id === "nodebb-plugin-minio-uploads") {
-		S3Conn = null;
+		MinIOClient = null;
 	}
 };
 
@@ -154,7 +151,6 @@ plugin.load = function (params, callback) {
 };
 
 function renderAdmin(req, res) {
-	// Regenerate csrf token
 	var token = req.csrfToken();
 
 	var forumPath = nconf.get("url");
@@ -212,13 +208,13 @@ plugin.uploadImage = function (data, callback) {
 
 	if (!image) {
 		winston.error("invalid image");
-		return callback(new Error("invalid image"));
+		return callback(makeError("invalid image"));
 	}
 
 	//check filesize vs. settings
 	if (image.size > parseInt(meta.config.maximumFileSize, 10) * 1024) {
 		winston.error("error:file-too-big, " + meta.config.maximumFileSize);
-		return callback(new Error("[[error:file-too-big, " + meta.config.maximumFileSize + "]]"));
+		return callback(makeError("[[error:file-too-big, " + meta.config.maximumFileSize + "]]"));
 	}
 
 	var type = image.url ? "url" : "file";
@@ -226,11 +222,11 @@ plugin.uploadImage = function (data, callback) {
 
 	if (type === "file") {
 		if (!image.path) {
-			return callback(new Error("invalid image path"));
+			return callback(makeError("invalid image path"));
 		}
 
 		if (allowedMimeTypes.indexOf(mime.getType(image.path)) === -1) {
-			return callback(new Error("invalid mime type"));
+			return callback(makeError("invalid mime type"));
 		}
 
 		fs.readFile(image.path, function (err, buffer) {
@@ -239,7 +235,7 @@ plugin.uploadImage = function (data, callback) {
 	}
 	else {
 		if (allowedMimeTypes.indexOf(mime.getType(image.url)) === -1) {
-			return callback(new Error("invalid mime type"));
+			return callback(makeError("invalid mime type"));
 		}
 		var filename = image.url.split("/").pop();
 
@@ -248,7 +244,7 @@ plugin.uploadImage = function (data, callback) {
 		// Resize image.
 		im(request(image.url), filename)
 			.resize(imageDimension + "^", imageDimension + "^")
-			.stream(function (err, stdout, stderr) {
+			.stream(function (err, stdout) {
 				if (err) {
 					return callback(makeError(err));
 				}
@@ -270,17 +266,17 @@ plugin.uploadFile = function (data, callback) {
 	var file = data.file;
 
 	if (!file) {
-		return callback(new Error("invalid file"));
+		return callback(makeError("invalid file"));
 	}
 
 	if (!file.path) {
-		return callback(new Error("invalid file path"));
+		return callback(makeError("invalid file path"));
 	}
 
 	//check filesize vs. settings
 	if (file.size > parseInt(meta.config.maximumFileSize, 10) * 1024) {
 		winston.error("error:file-too-big, " + meta.config.maximumFileSize);
-		return callback(new Error("[[error:file-too-big, " + meta.config.maximumFileSize + "]]"));
+		return callback(makeError("[[error:file-too-big, " + meta.config.maximumFileSize + "]]"));
 	}
 
 	fs.readFile(file.path, function (err, buffer) {
@@ -317,7 +313,7 @@ function uploadToS3(filename, err, buffer, callback) {
 		ContentType: mime.getType(filename)
 	};
 
-	MC().putObject(params.Bucket, params.Key, params.Body, params.Body.byteLength, { "Content-Type": params.ContentType }, function (err) {
+	MC().putObject(params.Bucket, params.Key, params.Body, params.Body.byteLength, params.ContentType ? { "Content-Type": params.ContentType } : {}, function (err) {
 		if (err) {
 			return callback(makeError(err));
 		}
