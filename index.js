@@ -12,7 +12,7 @@ var Package = require("./package.json"),
 	gm = require("gm"),
 	im = gm.subClass({ imageMagick: true }),
 	meta = require.main.require("./src/meta"),
-	db = require.main.require("./src/database");
+	db = require.main.require("./src/database"),
 	plugin = {},
 	MinIOClient = null,
 	settings = {
@@ -23,7 +23,7 @@ var Package = require("./package.json"),
 		"port": 9000,
 		"useSSL": true,
 		"endPoint": "s3.amazonaws.com"
-	};
+	},
 	minioSettings = { useSSL: true },
 	accessKeyIdFromDb = false;
 try {
@@ -135,9 +135,9 @@ try {
 				if (err) {
 					return winston.error(err.message);
 				}
-				adminRoute = "/admin/plugins/minio-uploads",
+				var adminRoute = "/admin/plugins/minio-uploads";
 
-					params.router.get(adminRoute, params.middleware.applyCSRF, params.middleware.admin.buildHeader, renderAdmin);
+				params.router.get(adminRoute, params.middleware.applyCSRF, params.middleware.admin.buildHeader, renderAdmin);
 				params.router.get("/api" + adminRoute, params.middleware.applyCSRF, renderAdmin);
 
 				params.router.post("/api" + adminRoute + "/s3settings", s3settings);
@@ -148,9 +148,9 @@ try {
 		};
 
 		function renderAdmin(req, res) {
-			token = req.csrfToken(),
+			var token = req.csrfToken();
 
-				forumPath = nconf.get("url"),
+			var forumPath = nconf.get("url");
 			if (forumPath.split("").reverse()[0] != "/") {
 				forumPath = forumPath + "/";
 			}
@@ -168,7 +168,7 @@ try {
 		}
 
 		function s3settings(req, res, next) {
-			data = req.body,
+			var data = req.body;
 			var newSettings = {
 				bucket: data.bucket || "",
 				endPoint: data.endPoint || "",
@@ -180,7 +180,7 @@ try {
 		}
 
 		function credentials(req, res, next) {
-			data = req.body,
+			var data = req.body;
 			var newSettings = {
 				accessKeyId: data.accessKeyId || "",
 				secretAccessKey: data.secretAccessKey || ""
@@ -202,7 +202,7 @@ try {
 
 		plugin.uploadImage = function (data, callback) {
 			winston.info("start uploading img");
-			image = data.image,
+			var image = data.image;
 
 			if (!image) {
 				winston.error("invalid image");
@@ -215,8 +215,8 @@ try {
 				return callback(makeError("[[error:file-too-big, " + meta.config.maximumFileSize + "]]"));
 			}
 
-			type = image.url ? "url" : "file",
-				allowedMimeTypes = ["image/png", "image/jpeg", "image/gif"],
+			var type = image.url ? "url" : "file";
+			var allowedMimeTypes = ["image/png", "image/jpeg", "image/gif"];
 
 			if (type === "file") {
 				if (!image.path) {
@@ -235,33 +235,33 @@ try {
 				if (allowedMimeTypes.indexOf(mime.getType(image.url)) === -1) {
 					return callback(makeError("invalid mime type"));
 				}
-				filename = image.url.split("/").pop(),
+				var filename = image.url.split("/").pop();
 
-					imageDimension = parseInt(meta.config.profileImageDimension, 10) || 128,
+				var imageDimension = parseInt(meta.config.profileImageDimension, 10) || 128;
 
-					// Resize image.
-					im(request(image.url), filename)
-						.resize(imageDimension + "^", imageDimension + "^")
-						.stream(function (err, stdout) {
-							if (err) {
-								return callback(makeError(err));
-							}
+				// Resize image.
+				im(request(image.url), filename)
+					.resize(imageDimension + "^", imageDimension + "^")
+					.stream(function (err, stdout) {
+						if (err) {
+							return callback(makeError(err));
+						}
 
-							// This is sort of a hack - We"re going to stream the gm output to a buffer and then upload.
-							// See https://github.com/aws/aws-sdk-js/issues/94
-							buf = new Buffer(0),
-								stdout.on("data", function (d) {
-									buf = Buffer.concat([buf, d]);
-								});
-							stdout.on("end", function () {
-								uploadToS3(filename, null, buf, callback);
-							});
+						// This is sort of a hack - We"re going to stream the gm output to a buffer and then upload.
+						// See https://github.com/aws/aws-sdk-js/issues/94
+						var buf = new Buffer(0);
+						stdout.on("data", function (d) {
+							buf = Buffer.concat([buf, d]);
 						});
+						stdout.on("end", function () {
+							uploadToS3(filename, null, buf, callback);
+						});
+					});
 			}
 		};
 
 		plugin.uploadFile = function (data, callback) {
-			file = data.file,
+			var file = data.file;
 
 			if (!file) {
 				return callback(makeError("invalid file"));
@@ -287,8 +287,7 @@ try {
 			if (err) {
 				return callback(makeError(err));
 			}
-
-			s3Path,
+			var s3Path;
 			if (minioSettings.path && 0 < minioSettings.path.length) {
 				s3Path = minioSettings.path;
 
@@ -301,7 +300,7 @@ try {
 				s3Path = "/";
 			}
 
-			s3KeyPath = s3Path.replace(/^\//, ""), // S3 Key Path should not start with slash.
+			var s3KeyPath = s3Path.replace(/^\//, ""); // S3 Key Path should not start with slash.
 
 			var params = {
 				Bucket: minioSettings.bucket,
@@ -318,7 +317,7 @@ try {
 				}
 
 				// amazon has https enabled, we use it by default
-				endPoint = "https://" + params.Bucket + ".s3.amazonaws.com",
+				var endPoint = "https://" + params.Bucket + ".s3.amazonaws.com";
 				if (minioSettings.endPoint && 0 < minioSettings.endPoint.length) {
 					endPoint = minioSettings.endPoint;
 					// endPoint must start with http or https
@@ -341,17 +340,17 @@ try {
 			});
 		}
 
-		admin = plugin.admin = {},
+		var admin = plugin.admin = {};
 
-			admin.menu = function (custom_header, callback) {
-				custom_header.plugins.push({
-					"route": "/plugins/minio-uploads",
-					"icon": "fa-envelope-o",
-					"name": "MinIO Uploads"
-				});
+		admin.menu = function (custom_header, callback) {
+			custom_header.plugins.push({
+				"route": "/plugins/minio-uploads",
+				"icon": "fa-envelope-o",
+				"name": "MinIO Uploads"
+			});
 
-				callback(null, custom_header);
-			};
+			callback(null, custom_header);
+		};
 
 		module.exports = plugin;
 

@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-minio-uploads",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "A plugin for NodeBB to take file uploads and store them on MinIO updated.",
   "main": "index.js",
   "scripts": {
